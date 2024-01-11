@@ -22,4 +22,4 @@ def add_hardware_data(hardware_arr, target_id):
     for i, asset in enumerate(hardware_arr):
         if asset["id"] == target_id:
             return hardware_arr.pop(i)
-    return "Hardware info was not found."
+    return "Hardware info was not found/Archived/Deleted."
