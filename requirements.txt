@@ -1,0 +1,11 @@
+Babel==2.14.0
+certifi==2023.11.17
+charset-normalizer==3.3.2
+idna==3.6
+pillow==10.2.0
+PyGetWindow==0.0.9
+PyRect==0.2.0
+requests==2.31.0
+tk==0.1.0
+tkcalendar==1.6.1
+urllib3==2.1.0

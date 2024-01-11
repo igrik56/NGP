@@ -6,6 +6,7 @@ from tkinter import filedialog
 from file_save_processor import get_save_path, set_save_path
 from PIL import Image, ImageTk
 from tkinter import ttk
+from date_processor import string_to_date
 
 with open("config.json") as config_file:
     config_data = json.load(config_file)
@@ -57,12 +58,14 @@ def show_notification(border_color, message, duration=3000):
 def save_selected_dates():
     start_date = cal_start.get_date()
     end_date = cal_end.get_date()
+    start_date_object, end_date_object = string_to_date(start_date, end_date)
+    
     result_label = tk.Label(root, text="")
     
-    if start_date <= end_date:
-        if generate_report.api_call(start_date, end_date):
+    if (start_date_object <= end_date_object):
+        if generate_report.api_call(start_date_object, end_date_object):
             result_label.place(x = width // 2, y = height // 2 + 160, anchor='s')
-            result_label.config(text="Your report has be generated and saved.", bg="green")
+            result_label.config(text="Your report has be generated\nand saved.", bg="green")
         else:
             # result_label.config(text="Report generation failed.", bg="red")
             # result_label.place(x = width // 2, y = height // 2 + 160, anchor='s')

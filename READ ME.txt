@@ -1,0 +1,2 @@
+##### In a long run the concept is not working, since the API can only return 500 entries per call. 
+Increasing the number of calls slowing down the app and with liner increase in stock, the delay will increase and make an app annoying to use.
