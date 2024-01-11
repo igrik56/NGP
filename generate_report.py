@@ -42,13 +42,13 @@ def prep_json_to_csv(data):
     
     # Date, Action_Type, Serial, Price, Asset Name, Move From, Move To, By User
     data_arr = [["Date (EST)", "Action_Type", "Serial", "Price", "Asset Name", "Move From", "Move To", "By User" ]]
-
     for record in data:
 
         date = record['created_at']['datetime']
         action_type = record ['action_type']
         serial = record['item']['serial']
-        #TODO: price = record["hardware_info"]["purchase_cost"]  # TypeError: string indices must be integers, not 'str'
+        #TODO: need to resolve an issue when purchase cost is of a NoneType 
+        # price = float(record["hardware_info"]["purchase_cost"]) if not isinstance(record["hardware_info"], (str, type(None))) else 0
         name = record["item"]["name"]
         #TODO: Checkout From
         #TODO: Checked in From     
@@ -56,7 +56,6 @@ def prep_json_to_csv(data):
 
         
         data_arr.append([date, action_type, serial, "price", name, "Move From", "Move To", by_user])
-    
     return data_arr
 
 
