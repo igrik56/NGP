@@ -15,19 +15,22 @@ headers = {
 params_activity_co = {
     "action_type": "checkout",
     "item_type": "asset",
-    "offset": 0
+    "offset": 0,
+    #"limit":1
     }
 
 params_activity_ci = {
     "action_type": "checkin from",
     "item_type": "asset",
-    "offset": 0
+    "offset": 0,
+    #"limit":1
     }
 
 params_activity_cr = {
     "action_type": "create",
     "item_type": "asset",
-    "offset": 0
+    "offset": 0,
+    #"limit":1                    
     }
 params_hardware = {
     "offset": 0
@@ -43,19 +46,18 @@ def prep_json_to_csv(data):
     # Date, Action_Type, Serial, Price, Asset Name, Move From, Move To, By User
     data_arr = [["Date (EST)", "Action_Type", "Serial", "Price", "Asset Name", "Move From", "Move To", "By User" ]]
     for record in data:
-
-        date = record['created_at']['datetime']
-        action_type = record ['action_type']
-        serial = record['item']['serial']
-        #TODO: need to resolve an issue when purchase cost is of a NoneType 
-        # price = float(record["hardware_info"]["purchase_cost"]) if not isinstance(record["hardware_info"], (str, type(None))) else 0
-        name = record["item"]["name"]
-        #TODO: Checkout From
-        #TODO: Checked in From     
-        by_user = record["admin"]["name"]
-
-        
-        data_arr.append([date, action_type, serial, "price", name, "Move From", "Move To", by_user])
+        try:
+            date = record['created_at']['datetime']
+            action_type = record ['action_type']
+            serial = record['item']['serial']
+            price = get_price(record)
+            name = record["item"]["name"]
+            move_from, move_to = get_checkout(record)
+            by_user = record["admin"]["name"]
+            
+            data_arr.append([date, action_type, serial, price, name, move_from, move_to, by_user])
+        except TypeError as e:
+            print(f"Error: {e}\nAt record: {record}")
     return data_arr
 
 
@@ -146,3 +148,55 @@ def get_data(url, headers, params):
 
     params['offset'] = 0
     return data
+
+def get_price(record):
+
+    if "Archived" in record["hardware_info"] : return 0
+    if not record["hardware_info"]: return 0
+    if not record["hardware_info"]["purchase_cost"]: return 0
+
+    price_value = record["hardware_info"]["purchase_cost"]
+    price = float(price_value.replace(',',''))
+    
+    return price
+
+def get_checkout(record):
+
+    if record["action_type"] == "create new": return "", "NGP Unassigned"       # need to add check if current 
+                                                                                #location does not exist.
+
+    if record["action_type"] == "checkout" and (record["target"]["type"] == "location" or record["target"]["type"] == "asset"):
+        if "Archived" in record["hardware_info"]: return record["target"]["name"], "Archived"
+
+        old_loc = record["hardware_info"]["rtd_location"]["name"] if record["hardware_info"]["rtd_location"] else record["hardware_info"]["location"]["name"]
+        new_loc = "Archived" if "Archived" in record["hardware_info"] else record["hardware_info"]["location"]["name"]
+
+        return old_loc, new_loc
+
+
+    if record["action_type"] == "checkout" and record["target"]["type"] == "user":
+        if "Archived" in record["hardware_info"]: return record["target"]["name"], "Archived"
+
+        old_loc = record["hardware_info"]["rtd_location"]["name"] if record["hardware_info"]["rtd_location"] else record["hardware_info"]["location"]["name"]
+        new_loc = record["target"]["name"]
+
+        return old_loc, new_loc
+    
+    if record['action_type'] == "checkin from" and record["target"]["type"] == 'user':        
+        if "Archived" in record["hardware_info"]: return record["target"]["name"], "Archived"
+
+        def_loc = record["hardware_info"]["rtd_location"]["name"] if record["hardware_info"]["rtd_location"] else record["hardware_info"]["location"]["name"]
+        old_loc = record["target"]["name"]
+        new_loc = "Archived" if "Archived" in record["hardware_info"] else def_loc
+
+        return old_loc, new_loc
+    
+    if record['action_type'] == "checkin from" and (record["target"]["type"] == "location" or record["target"]["type"] == "asset"):
+        if "Archived" in record["hardware_info"]: return record["target"]["name"], "Archived"
+
+        def_loc = record["hardware_info"]["rtd_location"]["name"] if record["hardware_info"]["rtd_location"] else record["hardware_info"]["location"]["name"]
+        old_loc = record["target"]["name"]
+        new_loc = "Archived" if "Archived" in record["hardware_info"] else def_loc
+
+        return old_loc, new_loc
+    

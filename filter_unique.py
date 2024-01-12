@@ -21,5 +21,5 @@ def add_hardware_data(hardware_arr, target_id):
         # type: (list, int) -> dict
     for i, asset in enumerate(hardware_arr):
         if asset["id"] == target_id:
-            return hardware_arr.pop(i)
+            return hardware_arr[i]
     return "Hardware info was not found/Archived/Deleted."
