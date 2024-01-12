@@ -36,7 +36,7 @@ def write_data_to_file(data_arr, last_month_arr):
     print(f"Here is a save path: {save_path}")
     output_directory = os.path.expanduser(save_path)
     
-    file_path = os.path.join(output_directory, f'Assets Deployed - {start_date} - {end_date}.csv')
+    file_path = os.path.join(output_directory, f'Assets Report - {start_date} - {end_date}.csv')
 
     with open(file_path, 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
