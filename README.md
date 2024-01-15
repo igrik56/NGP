@@ -1,4 +1,4 @@
-A small app with a UI that has only purpose to make call to snipe-it API and generate a report.
+A small app with a UI that has only purpose to make call to snipe-it API amd generate a report.
 
 Once started it will load a window that will load to calendars. 
 
