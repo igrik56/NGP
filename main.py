@@ -3,9 +3,10 @@ import generate_report
 from tkcalendar import Calendar
 import json
 from tkinter import filedialog
-from file_save_processor import get_save_path, set_save_path
+from FileProcessor import FileProcessor
 from PIL import Image, ImageTk
 from tkinter import ttk
+from date_processor import string_to_date
 
 with open("config.json") as config_file:
     config_data = json.load(config_file)
@@ -16,6 +17,7 @@ height = int(resolution["height"])
 bg_path = config_data["bg_path"]
 snipe_image = bg_path["snipe_it"]
 ngp = bg_path["ngp"]
+file_processor = FileProcessor()
 
 def center_window(window, sc_width, sc_height):
     screen_width = window.winfo_screenwidth()
@@ -57,12 +59,14 @@ def show_notification(border_color, message, duration=3000):
 def save_selected_dates():
     start_date = cal_start.get_date()
     end_date = cal_end.get_date()
+    start_date_object, end_date_object = string_to_date(start_date, end_date)
+    
     result_label = tk.Label(root, text="")
     
-    if start_date <= end_date:
-        if generate_report.api_call(start_date, end_date):
+    if (start_date_object <= end_date_object):
+        if generate_report.api_call(start_date_object, end_date_object):
             result_label.place(x = width // 2, y = height // 2 + 160, anchor='s')
-            result_label.config(text="Your report has be generated and saved.", bg="green")
+            result_label.config(text="Your report has be generated\nand saved.", bg="green")
         else:
             # result_label.config(text="Report generation failed.", bg="red")
             # result_label.place(x = width // 2, y = height // 2 + 160, anchor='s')
@@ -80,7 +84,7 @@ def update_entry_text(path):            #updating the input line.
     entry_text.set(path)
 
 def get_user_path(event = None):
-    default_save_path = get_save_path()
+    default_save_path = file_processor.get_save_path()
     print(default_save_path)
     users_save_path = filedialog.askdirectory(initialdir = default_save_path, 
                                               title="Select a directory to save the report.",
@@ -88,7 +92,7 @@ def get_user_path(event = None):
     if users_save_path == "":
         return default_save_path
     elif default_save_path != users_save_path:
-        set_save_path(users_save_path)
+        file_processor.set_save_path(users_save_path)
         update_entry_text(users_save_path)
         return users_save_path  
 
@@ -122,7 +126,7 @@ save_path_label = tk.Label(root, text="Save to: ", bg = "white")
 save_path_label.place(x = 30, y = height // 2 + 60 , anchor= "w")
 entry_text = tk.StringVar()
 
-placeholder = get_save_path()
+placeholder = file_processor.get_save_path()
 print(placeholder)
 save_path_input = tk.Entry(root, textvariable=entry_text, state="readonly", width=60, bg = "white")
 entry_text.set(placeholder)

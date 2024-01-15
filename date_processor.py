@@ -3,25 +3,27 @@ from datetime import datetime, timedelta
 ###################################
 # filter data => only checked out during
 # the last month will be here.
+
 def filter_data_by_date(response_data, last_month_arr):
 
     first_day_last_month = last_month_arr[0]
     last_day_last_month = last_month_arr[1]
 
-    checked_out_last_month = []
+    activity_last_month = []
 
     for item_info in response_data:
-        date_formatted = item_info["last_checkout"]["datetime"]
-        checked_out_date = datetime.strptime(date_formatted[:10], '%Y-%m-%d')
+        date_formatted = item_info["created_at"]["datetime"]
+        action_date = datetime.strptime(date_formatted[:10], '%Y-%m-%d')
      
-        if first_day_last_month <= checked_out_date <= last_day_last_month:
-            checked_out_last_month.append(item_info)
+        if first_day_last_month <= action_date <= last_day_last_month:
+            activity_last_month.append(item_info)
 
-    return checked_out_last_month
+    return activity_last_month
 
 
 ###################################
 # convert date sting to date object
+
 def string_to_date(start_date, end_date):
     start_date_object = ''
     end_date_object = ''
@@ -43,6 +45,7 @@ def string_to_date(start_date, end_date):
 ###################################
 # getting last_month days range and 
 # its name
+
 def last_month(start_date = None, end_date=None):
 
     if not start_date and not end_date:
