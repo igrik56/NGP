@@ -1,11 +1,13 @@
 import requests
 from date_processor import last_month, filter_data_by_date
 from filter_unique import filter_unique
-from file_save_processor import get_access_token, write_data_to_file
+# from file_save_processor import get_access_token, write_data_to_file
+from FileProcessor import FileProcessor
 
-access_token = get_access_token()
-url_activity = "https://ngp.snipe-it.io/api/v1/reports/activity"
-url_hardware = "https://ngp.snipe-it.io/api/v1/hardware"
+file_processor = FileProcessor()
+
+access_token = file_processor.get_access_token()
+url_activity, url_hardware = file_processor.get_urls()
 
 headers = {
     "accept": "application/json",
@@ -85,7 +87,7 @@ def api_call(start_date_object, end_date_object):
         action = ''
         no_data_print = [f"""
                   ***************************************************
-                  *  No items were {action} during selected period.  *
+                  *  No items were {action} during selected period. *
                   ***************************************************"""]
         
         if not filtered_temp_cr:
@@ -120,7 +122,7 @@ def api_call(start_date_object, end_date_object):
         if (data_stream): 
             data_arr = prep_json_to_csv(data_stream)
             if(data_arr):
-                write_data_to_file(data_arr, last_month_arr[2])
+                file_processor.write_data_to_file(data_arr, last_month_arr[2])
             else: return False
 
     except requests.exceptions.RequestException as e:
