@@ -1,12 +1,16 @@
 import tkinter as tk
-import generate_report
+import asyncio
+from fetch_data import fetch_data
+from generate_report import generate_report
 from tkcalendar import Calendar
+from Filters import DataFilter
 import json
 from tkinter import filedialog
 from FileProcessor import FileProcessor
 from PIL import Image, ImageTk
 from tkinter import ttk
-from date_processor import string_to_date
+from date_processor import string_to_date, last_month
+import threading
 
 with open("config.json") as config_file:
     config_data = json.load(config_file)
@@ -17,7 +21,11 @@ height = int(resolution["height"])
 bg_path = config_data["bg_path"]
 snipe_image = bg_path["snipe_it"]
 ngp = bg_path["ngp"]
+
 file_processor = FileProcessor()
+Filter = DataFilter()
+
+# data = asyncio.run(fetch_data())         # is a list containing [response_data_co + response_data_cr, response_data_ci, response_data_hw]
 
 def center_window(window, sc_width, sc_height):
     screen_width = window.winfo_screenwidth()
@@ -56,7 +64,7 @@ def show_notification(border_color, message, duration=3000):
 
     notification_window.after(duration, notification_window.destroy) 
     
-def save_selected_dates():
+def save_selected_dates(data):
     start_date = cal_start.get_date()
     end_date = cal_end.get_date()
     start_date_object, end_date_object = string_to_date(start_date, end_date)
@@ -64,7 +72,10 @@ def save_selected_dates():
     result_label = tk.Label(root, text="")
     
     if (start_date_object <= end_date_object):
-        if generate_report.api_call(start_date_object, end_date_object):
+        last_month_arr = last_month(start_date_object, end_date_object)
+        filtered_data = Filter.unique_by_date(data, last_month_arr[:2])
+        if filtered_data:
+            generate_report(filtered_data, last_month_arr[2])
             result_label.place(x = width // 2, y = height // 2 + 160, anchor='s')
             result_label.config(text="Your report has be generated\nand saved.", bg="green")
         else:
@@ -103,7 +114,6 @@ root.resizable(False, False)
 root.configure(bg="white")
 
 center_window(root, width, height)
-
 note_label = tk.Label(root, text='''Select a range of dates to generate the report.\nBy default the last calendar month will be selected.''', bg = "white")
 note_label.place(x=width // 2, y=0, anchor='n')
 
@@ -140,9 +150,10 @@ save_path_button.place(x = 470, y = height // 2 + 60 , anchor="w")
 ##########################
 # start the file_save_processor and generate_report
 
-submit_button = tk.Button(root, text="Generate the Report", command=save_selected_dates, bg = "white")
-submit_button.place(x = width // 2, y = height // 2 + 120, anchor="s")
-
+def enable_submit_btn(data):
+    submit_button = tk.Button(root, text="Generate the Report", command=save_selected_dates(data), bg = "white")
+    submit_button.place(x = width // 2, y = height // 2 + 120, anchor="s")
+    
 
 ##########################
 # adding logo to the bottom right corner.
@@ -152,5 +163,12 @@ logo = ImageTk.PhotoImage(image)
 image_label = tk.Label(root, image=logo, bg = "white")
 image_label.image = logo
 image_label.place(x = 540, y = 440, anchor="se")
+
+async def init_app():
+    data = await fetch_data()
+
+    root.after(0,enable_submit_btn(data))
+
+threading.Thread(target=asyncio.run, args=(init_app(),)).start()
 
 root.mainloop()

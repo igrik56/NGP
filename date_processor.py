@@ -4,21 +4,21 @@ from datetime import datetime, timedelta
 # filter data => only checked out during
 # the last month will be here.
 
-def filter_data_by_date(response_data, last_month_arr):
+# def filter_data_by_date(response_data, last_month_arr):
 
-    first_day_last_month = last_month_arr[0]
-    last_day_last_month = last_month_arr[1]
+#     first_day_last_month = last_month_arr[0]
+#     last_day_last_month = last_month_arr[1]
 
-    activity_last_month = []
+#     activity_last_month = []
 
-    for item_info in response_data:
-        date_formatted = item_info["created_at"]["datetime"]
-        action_date = datetime.strptime(date_formatted[:10], '%Y-%m-%d')
+#     for item_info in response_data:
+#         date_formatted = item_info["created_at"]["datetime"]
+#         action_date = datetime.strptime(date_formatted[:10], '%Y-%m-%d')
      
-        if first_day_last_month <= action_date <= last_day_last_month:
-            activity_last_month.append(item_info)
+#         if first_day_last_month <= action_date <= last_day_last_month:
+#             activity_last_month.append(item_info)
 
-    return activity_last_month
+#     return activity_last_month
 
 
 ###################################
